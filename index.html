@@ -20,19 +20,17 @@
             position: absolute; inset: 0;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            text-align: center; z-index: 3; pointer-events: none;
+            text-align: center; z-index: 4; pointer-events: none;
         }
 
         h1 {
             font-size: 3rem;
-            text-shadow: 0 0 25px rgba(255,180,255,0.7);
+            text-shadow: 0 0 25px rgba(255,180,255,0.8);
             animation: float 4s ease-in-out infinite;
         }
 
-        p { opacity: 0.85; margin-top: 0.5rem; }
-
         .tap {
-            position: absolute; bottom: 22px;
+            position: absolute; bottom: 24px;
             font-size: 0.9rem; opacity: 0.7;
             animation: pulse 2s infinite;
         }
@@ -41,92 +39,67 @@
             position: absolute; inset: 0;
             display: none; flex-direction: column;
             justify-content: center; align-items: center;
-            padding: 32px; z-index: 4;
-            background: radial-gradient(circle, rgba(0,0,0,0.5), rgba(0,0,0,0.9));
-            animation: pop 0.7s ease-out forwards;
+            padding: 32px; z-index: 5;
+            background: radial-gradient(circle, rgba(0,0,0,0.4), rgba(0,0,0,0.9));
+            animation: pop 0.8s cubic-bezier(.2,.9,.3,1) forwards;
         }
 
         .message h2 {
-            font-size: 2.3rem; margin-bottom: 1rem;
-            text-shadow: 0 0 20px rgba(255,150,255,0.8);
+            font-size: 2.4rem; margin-bottom: 1rem;
+            text-shadow: 0 0 25px rgba(255,150,255,0.9);
         }
 
         .message p {
-            font-size: 1.1rem; line-height: 1.6;
+            font-size: 1.1rem; line-height: 1.7;
             max-width: 420px; opacity: 0.95;
-        }
-
-        .heart, .confetti {
-            position: absolute; pointer-events: none;
-        }
-
-        .heart {
-            width: 12px; height: 12px; background: pink;
-            transform: rotate(45deg);
-            animation: rise 4s linear forwards;
-        }
-
-        .heart::before, .heart::after {
-            content: ''; position: absolute;
-            width: 12px; height: 12px; background: pink; border-radius: 50%;
-        }
-
-        .heart::before { left: -6px; }
-        .heart::after { top: -6px; }
-
-        .confetti {
-            width: 6px; height: 10px;
-            animation: confettiFall 5s linear forwards;
         }
 
         .balloon {
             position: absolute; bottom: -120px;
-            width: 50px; height: 70px;
+            width: 52px; height: 72px;
             border-radius: 50% 50% 45% 45%;
-            animation: balloonRise 12s linear infinite;
-            z-index: 2;
+            animation: balloonRise 14s linear infinite;
+            z-index: 3;
         }
 
         .balloon::after {
             content: ''; position: absolute;
-            bottom: -20px; left: 50%;
-            width: 2px; height: 25px;
+            bottom: -22px; left: 50%;
+            width: 2px; height: 26px;
             background: rgba(255,255,255,0.5);
             transform: translateX(-50%);
         }
 
-        @keyframes float { 50% { transform: translateY(-12px); } }
+        @keyframes float { 50% { transform: translateY(-14px); } }
         @keyframes pulse { 50% { opacity: 1; } }
-        @keyframes pop { from { transform: scale(0); opacity: 0; } }
-        @keyframes rise { to { transform: translateY(-120vh) rotate(45deg); opacity: 0; } }
-        @keyframes confettiFall { to { transform: translateY(120vh) rotate(720deg); opacity: 0; } }
-        @keyframes balloonRise { to { transform: translateY(-140vh); } }
+        @keyframes pop { from { transform: scale(0.6); opacity: 0; } }
+        @keyframes balloonRise { to { transform: translateY(-150vh); } }
     </style>
 </head>
 <body>
 <canvas id="bg"></canvas>
 
-<audio id="music" loop>
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9c8a2d2c98.mp3" type="audio/mpeg">
+<!-- Music MUST start from a real user gesture -->
+<audio id="music" preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2023/03/28/audio_0a9a7e3d6d.mp3" type="audio/mpeg">
 </audio>
 
 <div class="center" id="intro">
-    <h1>🎂 Happy Birthday 🎂</h1>
-    <p>A little surprise is waiting for you…</p>
+    <h1>🎂 HBD AZKA 🎂</h1>
     <div class="tap">Tap anywhere ✨</div>
 </div>
 
 <div class="message" id="message">
     <h2>Happy Birthday 💖</h2>
     <p>
-        Even though we’re far apart, I hope this makes you smile today 🌸
+        Semoga panjang umur dan sehat selalu. Bertambah umur, bertambah berkah 🌸
         <br /><br />
         May your day be filled with laughter, love, and all the happiness you deserve ✨
     </p>
 </div>
 
 <script>
-    // Background stars
+    // ===== Canvas: Stars + Fireworks =====
     const canvas = document.getElementById('bg');
     const ctx = canvas.getContext('2d');
     let w, h;
@@ -137,76 +110,92 @@
     }
     resize(); addEventListener('resize', resize);
 
-    const stars = Array.from({ length: 150 }, () => ({
+    const stars = Array.from({ length: 140 }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: Math.random() * 2,
-        s: Math.random() * 0.5 + 0.2
+        r: Math.random() * 2 + 0.5,
+        s: Math.random() * 0.3 + 0.1
     }));
 
+    const fireworks = [];
+
+    function spawnFirework() {
+        const x = Math.random() * w * 0.8 + w * 0.1;
+        const y = Math.random() * h * 0.5 + h * 0.1;
+        const color = `hsl(${Math.random()*360},100%,60%)`;
+        for (let i = 0; i < 60; i++) {
+            fireworks.push({
+                x, y,
+                vx: Math.cos(i) * (Math.random()*4+2),
+                vy: Math.sin(i) * (Math.random()*4+2),
+                life: 60,
+                color
+            });
+        }
+    }
+
     function animate() {
-        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.fillRect(0,0,w,h);
+
         for (const s of stars) {
             s.y -= s.s;
             if (s.y < 0) s.y = h;
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
             ctx.beginPath();
             ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
             ctx.fill();
         }
+
+        for (let i = fireworks.length - 1; i >= 0; i--) {
+            const f = fireworks[i];
+            f.x += f.vx; f.y += f.vy; f.vy += 0.05; f.life--;
+            ctx.fillStyle = f.color;
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+            if (f.life <= 0) fireworks.splice(i, 1);
+        }
+
         requestAnimationFrame(animate);
     }
     animate();
 
+    // ===== Interaction =====
     const intro = document.getElementById('intro');
     const message = document.getElementById('message');
     const music = document.getElementById('music');
 
-    document.addEventListener('click', reveal, { once: true });
-    document.addEventListener('touchstart', reveal, { once: true });
+    let started = false;
 
-    function reveal() {
+    function startExperience() {
+        if (started) return;
+        started = true;
+
         intro.style.display = 'none';
         message.style.display = 'flex';
-        music.play();
-        hearts(); confetti(); fireworks(); balloons();
+
+        // Music: guaranteed user gesture
+        music.currentTime = 0;
+        music.volume = 0.8;
+        music.play().catch(() => {});
+
+        // WOW factor
+        spawnFirework();
+        setInterval(spawnFirework, 2000);
+        spawnBalloons();
     }
 
-    function hearts() {
-        for (let i = 0; i < 30; i++) {
-            const h = document.createElement('div');
-            h.className = 'heart';
-            h.style.left = Math.random() * 100 + 'vw';
-            h.style.bottom = '-20px';
-            document.body.appendChild(h);
-            setTimeout(() => h.remove(), 5000);
-        }
-    }
+    document.addEventListener('pointerdown', startExperience, { once: true });
 
-    function confetti() {
-        for (let i = 0; i < 80; i++) {
-            const c = document.createElement('div');
-            c.className = 'confetti';
-            c.style.left = Math.random() * 100 + 'vw';
-            c.style.top = '-20px';
-            c.style.background = `hsl(${Math.random()*360},100%,60%)`;
-            document.body.appendChild(c);
-            setTimeout(() => c.remove(), 6000);
-        }
-    }
-
-    function fireworks() {
-        setInterval(() => confetti(), 2500);
-    }
-
-    function balloons() {
-        const colors = ['#ff6b6b','#ffd93d','#6bcfff','#c77dff'];
-        for (let i = 0; i < 6; i++) {
+    function spawnBalloons() {
+        const colors = ['#ff6b6b','#ffd93d','#6bcfff','#c77dff','#4dffd2'];
+        for (let i = 0; i < 7; i++) {
             const b = document.createElement('div');
             b.className = 'balloon';
             b.style.left = Math.random() * 100 + 'vw';
             b.style.background = colors[i % colors.length];
-            b.style.animationDelay = Math.random() * 5 + 's';
+            b.style.animationDelay = Math.random() * 6 + 's';
             document.body.appendChild(b);
         }
     }

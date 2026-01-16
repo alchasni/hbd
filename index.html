@@ -25,7 +25,7 @@
 
         h1 {
             font-size: 3rem;
-            text-shadow: 0 0 25px rgba(255,180,255,0.8);
+            text-shadow: 0 0 25px rgba(255,180,255,0.9);
             animation: float 4s ease-in-out infinite;
         }
 
@@ -52,6 +52,14 @@
         .message p {
             font-size: 1.1rem; line-height: 1.7;
             max-width: 420px; opacity: 0.95;
+            text-align: center;
+        }
+
+        .hint {
+            margin-top: 16px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            animation: pulse 2s infinite;
         }
 
         .balloon {
@@ -79,7 +87,6 @@
 <body>
 <canvas id="bg"></canvas>
 
-<!-- Music MUST start from a real user gesture -->
 <audio id="music" preload="auto">
     <source src="https://cdn.pixabay.com/download/audio/2023/03/28/audio_0a9a7e3d6d.mp3" type="audio/mpeg">
 </audio>
@@ -91,15 +98,14 @@
 
 <div class="message" id="message">
     <h2>Happy Birthday 💖</h2>
-    <p>
-        Semoga panjang umur dan sehat selalu. Bertambah umur, bertambah berkah 🌸
-        <br /><br />
-        May your day be filled with laughter, love, and all the happiness you deserve ✨
+    <p id="msgText">
+        Semoga panjang umur dan sehat selalu 🌸
     </p>
+    <div class="hint">Tap the screen 💫</div>
 </div>
 
 <script>
-    // ===== Canvas: Stars + Fireworks =====
+    // ===== Canvas Background + Fireworks =====
     const canvas = document.getElementById('bg');
     const ctx = canvas.getContext('2d');
     let w, h;
@@ -119,11 +125,9 @@
 
     const fireworks = [];
 
-    function spawnFirework() {
-        const x = Math.random() * w * 0.8 + w * 0.1;
-        const y = Math.random() * h * 0.5 + h * 0.1;
+    function explode(x, y) {
         const color = `hsl(${Math.random()*360},100%,60%)`;
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 50; i++) {
             fireworks.push({
                 x, y,
                 vx: Math.cos(i) * (Math.random()*4+2),
@@ -161,32 +165,41 @@
     }
     animate();
 
-    // ===== Interaction =====
+    // ===== Interaction Logic =====
     const intro = document.getElementById('intro');
     const message = document.getElementById('message');
     const music = document.getElementById('music');
+    const msgText = document.getElementById('msgText');
+
+    const messages = [
+        "Semoga panjang umur dan sehat selalu 🌸",
+        "Bertambah umur, bertambah berkah 🎈",
+        "Barakallah fii umrik ✨",
+        "Semoga Allah memudahkan segala urusan dan mengabulkan doa-doamu 🌟",
+        "May your day be filled with laughter, love, and all the happiness you deserve 💖",
+        "I hope this year brings you beautiful surprises 🎂"
+    ];
 
     let started = false;
+    let msgIndex = 0;
 
-    function startExperience() {
-        if (started) return;
-        started = true;
+    function startExperience(e) {
+        if (!started) {
+            started = true;
+            intro.style.display = 'none';
+            message.style.display = 'flex';
+            music.volume = 0.8;
+            music.play().catch(() => {});
+            spawnBalloons();
+        }
 
-        intro.style.display = 'none';
-        message.style.display = 'flex';
-
-        // Music: guaranteed user gesture
-        music.currentTime = 0;
-        music.volume = 0.8;
-        music.play().catch(() => {});
-
-        // WOW factor
-        spawnFirework();
-        setInterval(spawnFirework, 2000);
-        spawnBalloons();
+        // Every tap after start = personal reaction
+        explode(e.clientX || w/2, e.clientY || h/2);
+        msgIndex = (msgIndex + 1) % messages.length;
+        msgText.textContent = messages[msgIndex];
     }
 
-    document.addEventListener('pointerdown', startExperience, { once: true });
+    document.addEventListener('pointerdown', startExperience);
 
     function spawnBalloons() {
         const colors = ['#ff6b6b','#ffd93d','#6bcfff','#c77dff','#4dffd2'];

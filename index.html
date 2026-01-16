@@ -78,6 +78,28 @@
             transform: translateX(-50%);
         }
 
+        #muteBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.55);
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            z-index: 10;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        #muteBtn:active {
+            transform: scale(0.9);
+        }
+
         @keyframes float { 50% { transform: translateY(-14px); } }
         @keyframes pulse { 50% { opacity: 1; } }
         @keyframes pop { from { transform: scale(0.6); opacity: 0; } }
@@ -87,9 +109,11 @@
 <body>
 <canvas id="bg"></canvas>
 
-<audio id="music" preload="auto">
-    <source src="https://cdn.pixabay.com/download/audio/2023/03/28/audio_0a9a7e3d6d.mp3" type="audio/mpeg">
+<audio id="music" preload="auto" loop>
+    <source src="hbd.mp3" type="audio/mpeg">
 </audio>
+
+<button id="muteBtn">🔊</button>
 
 <div class="center" id="intro">
     <h1>🎂 HBD AZKA 🎂</h1>
@@ -170,6 +194,7 @@
     const message = document.getElementById('message');
     const music = document.getElementById('music');
     const msgText = document.getElementById('msgText');
+    const muteBtn = document.getElementById('muteBtn');
 
     const messages = [
         "Semoga panjang umur dan sehat selalu 🌸",
@@ -182,24 +207,36 @@
 
     let started = false;
     let msgIndex = 0;
+    let isMuted = false;
 
     function startExperience(e) {
+        // ⛔ ignore mute button taps
+        if (e.target === muteBtn) return;
+
         if (!started) {
             started = true;
             intro.style.display = 'none';
             message.style.display = 'flex';
-            music.volume = 0.8;
+
+            music.volume = 0.5;
+            music.muted = false;
             music.play().catch(() => {});
             spawnBalloons();
         }
 
-        // Every tap after start = personal reaction
-        explode(e.clientX || w/2, e.clientY || h/2);
+        explode(e.clientX || w / 2, e.clientY || h / 2);
         msgIndex = (msgIndex + 1) % messages.length;
         msgText.textContent = messages[msgIndex];
     }
 
     document.addEventListener('pointerdown', startExperience);
+
+    muteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isMuted = !isMuted;
+        music.muted = isMuted;
+        muteBtn.textContent = isMuted ? '🔇' : '🔊';
+    });
 
     function spawnBalloons() {
         const colors = ['#ff6b6b','#ffd93d','#6bcfff','#c77dff','#4dffd2'];
